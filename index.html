@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نبرد ربات‌ها - Robot Battle 3D</title>
+    <title>نبرد ربات‌ها - PeerJS Multiplayer</title>
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -30,7 +30,6 @@
             left: 0;
             z-index: 1;
         }
-        /* UI Overlay */
         .ui-layer {
             position: absolute;
             top: 0;
@@ -61,32 +60,31 @@
         h1 {
             font-family: 'Lalezar', cursive;
             margin: 0;
-            font-size: 24px;
+            font-size: 22px;
             color: #00f3ff;
             text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-            letter-spacing: 1px;
         }
         .stats-box {
             display: flex;
-            gap: 15px;
-            font-size: 14px;
+            gap: 10px;
+            font-size: 13px;
             font-weight: 700;
         }
         .stat-item {
             background: rgba(255, 255, 255, 0.05);
-            padding: 5px 12px;
+            padding: 5px 10px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .health-bar-container {
-            width: 120px;
-            height: 10px;
+            width: 100px;
+            height: 8px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
+            border-radius: 4px;
             overflow: hidden;
             display: inline-block;
             vertical-align: middle;
-            margin-right: 8px;
+            margin-right: 5px;
         }
         .health-bar-fill {
             height: 100%;
@@ -94,8 +92,6 @@
             width: 100%;
             transition: width 0.3s ease;
         }
-
-        /* Mobile Controls */
         .controls-layer {
             display: flex;
             justify-content: space-between;
@@ -122,7 +118,6 @@
             top: 37.5px;
             left: 37.5px;
             box-shadow: 0 4px 15px rgba(0, 243, 255, 0.5);
-            transition: transform 0.05s linear;
         }
         .action-buttons {
             display: flex;
@@ -142,7 +137,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.1s, filter 0.1s;
         }
         .btn-action:active {
             transform: scale(0.92);
@@ -158,8 +152,6 @@
             box-shadow: 0 0 20px rgba(170, 0, 255, 0.4);
             margin-bottom: 25px;
         }
-
-        /* Screens / Modals */
         .screen {
             position: absolute;
             top: 0;
@@ -177,33 +169,54 @@
         }
         .screen h2 {
             font-family: 'Lalezar', cursive;
-            font-size: 48px;
+            font-size: 38px;
             color: #00f3ff;
             margin: 0 0 10px 0;
             text-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
         }
         .screen p {
-            font-size: 16px;
+            font-size: 14px;
             color: #a5b4fc;
-            max-width: 400px;
-            margin-bottom: 30px;
+            max-width: 360px;
+            margin-bottom: 20px;
             line-height: 1.6;
+        }
+        .net-input {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(0,243,255,0.4);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Vazirmatn';
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+            width: 250px;
+            outline: none;
+        }
+        .net-input::placeholder {
+            color: rgba(255,255,255,0.4);
         }
         .main-btn {
             background: linear-gradient(135deg, #00f3ff, #0066ff);
             color: #090a16;
             border: none;
-            padding: 15px 40px;
+            padding: 12px 30px;
             font-family: 'Lalezar', cursive;
-            font-size: 22px;
+            font-size: 20px;
             border-radius: 12px;
             cursor: pointer;
             box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
-            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
         }
         .main-btn:active {
             transform: scale(0.95);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+        #net-info {
+            font-size: 13px;
+            color: #00ff66;
+            margin-top: 10px;
+            word-break: break-all;
         }
         .hidden {
             display: none !important;
@@ -214,10 +227,9 @@
 
     <div id="game-container"></div>
 
-    <!-- UI Overlay -->
     <div class="ui-layer">
         <header class="interactive">
-            <h1>🤖 نبرد ربات‌ها</h1>
+            <h1>🤖 نبرد چندنفره ربات‌ها</h1>
             <div class="stats-box">
                 <div class="stat-item">
                     سلامتی: <span class="health-bar-container"><span id="player-hp" class="health-bar-fill"></span></span>
@@ -237,30 +249,38 @@
         </div>
     </div>
 
-    <!-- Start Screen -->
     <div id="start-screen" class="screen">
-        <h2>نبرد ربات‌های سه‌بعدی</h2>
-        <p>به میدان نبرد ربات‌ها خوش آمدید! با جوی‌استیک چپ حرکت کنید، با دکمه پرش از موانع بگذرید و با دکمه شلیک ربات‌های دشمن را نابود کنید.</p>
-        <button id="start-btn" class="main-btn">شروع نبرد</button>
+        <h2>نبرد چندنفره ربات‌ها</h2>
+        <p>به صورت تک‌نفره بازی کنید یا با ساخت اتاق یا وارد کردن کد اتاق دوستتان، به صورت آنلاین و هم‌زمان بجنگید!</p>
+        <button id="solo-btn" class="main-btn" style="background: linear-gradient(135deg, #00ff66, #0099ff);">شروع بازی آفلاین</button>
+        <hr style="width: 60%; border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+        <button id="host-btn" class="main-btn">ساخت اتاق آنلاین</button>
+        <div id="net-info"></div>
+        <div style="margin-top: 15px;">
+            <input type="text" id="peer-id-input" class="net-input" placeholder="کد اتاق دوستتان را وارد کنید">
+            <br>
+            <button id="join-btn" class="main-btn" style="background: linear-gradient(135deg, #ff0055, #ff5500);">پیوستن به اتاق</button>
+        </div>
     </div>
 
-    <!-- Game Over Screen -->
     <div id="gameover-screen" class="screen hidden">
         <h2 style="color: #ff0055; text-shadow: 0 0 20px rgba(255,0,85,0.6);">شکست در نبرد!</h2>
         <p id="final-score">امتیاز نهایی شما: 0</p>
-        <button id="restart-btn" class="main-btn">تلاش مجدد</button>
+        <button id="restart-btn" class="main-btn">بازگشت به منو</button>
     </div>
 
-    <!-- Three.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script>
         let scene, camera, renderer;
-        let player, enemies = [], bullets = [];
+        let player, remotePlayer = null, enemies = [], bullets = [];
         let score = 0, playerHp = 100;
         let gameActive = false;
         let moveVector = new THREE.Vector3(0, 0, 0);
         let playerVelocityY = 0;
         let isGrounded = true;
+
+        let peer = null, conn = null, isHost = false;
 
         function init() {
             const container = document.getElementById('game-container');
@@ -275,12 +295,9 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
             const dirLight = new THREE.DirectionalLight(0x00f3ff, 0.8);
             dirLight.position.set(20, 40, 20);
             dirLight.castShadow = true;
@@ -291,6 +308,7 @@
 
             window.addEventListener('resize', onWindowResize);
             setupControls();
+            setupNetworking();
             animate();
         }
 
@@ -315,95 +333,139 @@
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
 
-                const pillarGeo = new THREE.BoxGeometry(4, 8, 4);
-                const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                const pillar = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), pillarMat);
                 pillar.position.set(x, 4, z);
                 pillar.castShadow = true;
                 scene.add(pillar);
 
-                const stripGeo = new THREE.BoxGeometry(4.2, 0.5, 4.2);
-                const strip = new THREE.Mesh(stripGeo, neonMat);
+                const strip = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.5, 4.2), neonMat);
                 strip.position.set(x, 6, z);
                 scene.add(strip);
             }
         }
 
-        function createPlayer() {
-            const robotGroup = new THREE.Group();
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0066ff, metalness: 0.7, roughness: 0.3 });
-            const accentMat = new THREE.MeshStandardMaterial({ color: 0x00f3ff, emissive: 0x00f3ff, emissiveIntensity: 0.5 });
+        function createRobotMesh(colorHex, accentHex) {
+            const group = new THREE.Group();
+            const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.7, roughness: 0.3 });
+            const accentMat = new THREE.MeshStandardMaterial({ color: accentHex, emissive: accentHex, emissiveIntensity: 0.5 });
             const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.9, roughness: 0.1 });
 
             const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.8), bodyMat);
             torso.position.y = 1.5;
             torso.castShadow = true;
-            robotGroup.add(torso);
+            group.add(torso);
 
             const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.7), darkMat);
             head.position.y = 2.5;
-            robotGroup.add(head);
+            group.add(head);
 
             const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 0.1), accentMat);
             visor.position.set(0, 2.55, 0.36);
-            robotGroup.add(visor);
+            group.add(visor);
 
             const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.2), darkMat);
             arm.rotation.z = Math.PI / 2;
             arm.position.set(0.8, 1.6, 0.4);
-            robotGroup.add(arm);
+            group.add(arm);
 
             const legs = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.8), darkMat);
             legs.position.y = 0.4;
-            robotGroup.add(legs);
+            group.add(legs);
 
-            player = robotGroup;
+            return group;
+        }
+
+        function createPlayer() {
+            player = createRobotMesh(0x0066ff, 0x00f3ff);
             player.position.set(0, 0, 0);
             scene.add(player);
         }
 
+        function createRemotePlayer() {
+            if (remotePlayer) scene.remove(remotePlayer);
+            remotePlayer = createRobotMesh(0xff5500, 0xff0055);
+            remotePlayer.position.set(5, 0, 5);
+            scene.add(remotePlayer);
+        }
+
         function spawnEnemy() {
             if (!gameActive) return;
-
-            const enemyGroup = new THREE.Group();
-            const enemyBodyMat = new THREE.MeshStandardMaterial({ color: 0xff0055, metalness: 0.7, roughness: 0.3 });
-            const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.9 });
-
-            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.8), enemyBodyMat);
-            torso.position.y = 1.5;
-            enemyGroup.add(torso);
-
-            const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.7), darkMat);
-            head.position.y = 2.5;
-            enemyGroup.add(head);
-
-            const legs = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.8), darkMat);
-            legs.position.y = 0.4;
-            enemyGroup.add(legs);
-
+            const enemyGroup = createRobotMesh(0xff0055, 0xff0000);
             const angle = Math.random() * Math.PI * 2;
             const dist = 35 + Math.random() * 15;
             enemyGroup.position.set(Math.cos(angle) * dist, 0, Math.sin(angle) * dist);
             enemyGroup.userData = { hp: 50 };
-
             scene.add(enemyGroup);
             enemies.push(enemyGroup);
         }
 
         function playerShoot() {
             if (!gameActive) return;
-
             const bullet = new THREE.Mesh(
                 new THREE.SphereGeometry(0.2, 8, 8),
                 new THREE.MeshBasicMaterial({ color: 0x00f3ff })
             );
             bullet.position.copy(player.position);
             bullet.position.y += 1.6;
-
             const dir = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
             bullet.userData = { velocity: dir.multiplyScalar(0.8), life: 100 };
-
             scene.add(bullet);
             bullets.push(bullet);
+
+            if (conn && conn.open) {
+                conn.send({ type: 'shoot', pos: bullet.position, vel: bullet.userData.velocity });
+            }
+        }
+
+        function setupNetworking() {
+            peer = new Peer();
+            peer.on('open', (id) => {
+                document.getElementById('net-info').innerText = `کد اتاق شما: ${id}`;
+            });
+
+            peer.on('connection', (connection) => {
+                conn = connection;
+                isHost = true;
+                initConnectionEvents();
+                startGame();
+            });
+
+            document.getElementById('host-btn').addEventListener('click', () => {
+                isHost = true;
+                startGame();
+            });
+
+            document.getElementById('join-btn').addEventListener('click', () => {
+                const remoteId = document.getElementById('peer-id-input').value.trim();
+                if (!remoteId) return;
+                conn = peer.connect(remoteId);
+                isHost = false;
+                initConnectionEvents();
+                startGame();
+            });
+        }
+
+        function initConnectionEvents() {
+            conn.on('open', () => {
+                createRemotePlayer();
+            });
+            conn.on('data', (data) => {
+                if (data.type === 'move') {
+                    if (remotePlayer) {
+                        remotePlayer.position.set(data.x, data.y, data.z);
+                        remotePlayer.rotation.y = data.rotY;
+                    }
+                } else if (data.type === 'shoot') {
+                    const b = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.2, 8, 8),
+                        new THREE.MeshBasicMaterial({ color: 0xff5500 })
+                    );
+                    b.position.set(data.pos.x, data.pos.y, data.pos.z);
+                    b.userData = { velocity: new THREE.Vector3(data.vel.x, data.vel.y, data.vel.z), life: 100 };
+                    scene.add(b);
+                    bullets.push(b);
+                }
+            });
         }
 
         function setupControls() {
@@ -427,13 +489,9 @@
                         const dy = touch.clientY - joystickCenter.y;
                         const dist = Math.min(50, Math.hypot(dx, dy));
                         const angle = Math.atan2(dy, dx);
-
-                        const knobX = Math.cos(angle) * dist;
-                        const knobY = Math.sin(angle) * dist;
-                        knob.style.transform = `translate(${knobX}px, ${knobY}px)`;
-
-                        moveVector.x = (knobX / 50);
-                        moveVector.z = (knobY / 50);
+                        knob.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+                        moveVector.x = (Math.cos(angle)*dist / 50);
+                        moveVector.z = (Math.sin(angle)*dist / 50);
                     }
                 }
             });
@@ -455,8 +513,11 @@
                 }
             });
 
-            document.getElementById('start-btn').addEventListener('click', startGame);
-            document.getElementById('restart-btn').addEventListener('click', startGame);
+            document.getElementById('solo-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', () => {
+                document.getElementById('gameover-screen').classList.add('hidden');
+                document.getElementById('start-screen').classList.remove('hidden');
+            });
         }
 
         function startGame() {
@@ -474,8 +535,8 @@
             enemies = [];
             bullets = [];
 
-            for (let i = 0; i < 4; i++) {
-                spawnEnemy();
+            if (isHost || !conn) {
+                for (let i = 0; i < 4; i++) spawnEnemy();
             }
 
             gameActive = true;
@@ -484,14 +545,10 @@
         function updateHPBar() {
             document.getElementById('player-hp').style.width = Math.max(0, playerHp) + '%';
             if (playerHp <= 0 && gameActive) {
-                gameOver();
+                gameActive = false;
+                document.getElementById('final-score').innerText = `امتیاز نهایی شما: ${score}`;
+                document.getElementById('gameover-screen').classList.remove('hidden');
             }
-        }
-
-        function gameOver() {
-            gameActive = false;
-            document.getElementById('final-score').innerText = `امتیاز نهایی شما: ${score}`;
-            document.getElementById('gameover-screen').classList.remove('hidden');
         }
 
         function onWindowResize() {
@@ -509,9 +566,18 @@
                     player.position.x += moveVector.x * speed;
                     player.position.z += moveVector.z * speed;
                     player.rotation.y = Math.atan2(moveVector.x, moveVector.z);
-
                     player.position.x = Math.max(-55, Math.min(55, player.position.x));
                     player.position.z = Math.max(-55, Math.min(55, player.position.z));
+
+                    if (conn && conn.open) {
+                        conn.send({
+                            type: 'move',
+                            x: player.position.x,
+                            y: player.position.y,
+                            z: player.position.z,
+                            rotY: player.rotation.y
+                        });
+                    }
                 }
 
                 player.position.y += playerVelocityY;
@@ -536,7 +602,7 @@
 
                     let hit = false;
                     for (let j = enemies.length - 1; j >= 0; j--) {
-                        const enemy = enemies.get ? enemies[j] : enemies[j];
+                        const enemy = enemies[j];
                         if (b.position.distanceTo(enemy.position) < 1.5) {
                             enemy.userData.hp -= 25;
                             hit = true;
@@ -545,7 +611,7 @@
                                 enemies.splice(j, 1);
                                 score += 10;
                                 document.getElementById('score-val').innerText = score;
-                                spawnEnemy();
+                                if (isHost || !conn) spawnEnemy();
                             }
                             break;
                         }
