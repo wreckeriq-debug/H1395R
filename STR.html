@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نبرد ربات‌ها - Robot Battle 3D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0f1020;
+            font-family: 'Vazirmatn', sans-serif;
+            color: #ffffff;
+        }
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        /* UI Overlay */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+        }
+        .interactive {
+            pointer-events: auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 16, 32, 0.75);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            font-family: 'Lalezar', cursive;
+            margin: 0;
+            font-size: 24px;
+            color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            letter-spacing: 1px;
+        }
+        .stats-box {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .health-bar-container {
+            width: 120px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .health-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f3ff, #00ff66);
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* Mobile Controls */
+        .controls-layer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            padding-bottom: 20px;
+        }
+        .joystick-zone {
+            width: 130px;
+            height: 130px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 243, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+            touch-action: none;
+            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+        .joystick-knob {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            border-radius: 50%;
+            position: absolute;
+            top: 37.5px;
+            left: 37.5px;
+            box-shadow: 0 4px 15px rgba(0, 243, 255, 0.5);
+            transition: transform 0.05s linear;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .btn-action {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            border: none;
+            font-family: 'Lalezar', cursive;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, filter 0.1s;
+        }
+        .btn-action:active {
+            transform: scale(0.92);
+        }
+        #btn-shoot {
+            background: linear-gradient(135deg, #ff0055, #ff5500);
+            border: 2px solid rgba(255, 0, 85, 0.5);
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
+        }
+        #btn-jump {
+            background: linear-gradient(135deg, #aa00ff, #00f3ff);
+            border: 2px solid rgba(170, 0, 255, 0.5);
+            box-shadow: 0 0 20px rgba(170, 0, 255, 0.4);
+            margin-bottom: 25px;
+        }
+
+        /* Screens / Modals */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1b1c3a 0%, #090a16 100%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .screen h2 {
+            font-family: 'Lalezar', cursive;
+            font-size: 48px;
+            color: #00f3ff;
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+        }
+        .screen p {
+            font-size: 16px;
+            color: #a5b4fc;
+            max-width: 400px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .main-btn {
+            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            color: #090a16;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Lalezar', cursive;
+            font-size: 22px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .main-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container"></div>
+
+    <!-- UI Overlay -->
+    <div class="ui-layer">
+        <header class="interactive">
+            <h1>🤖 نبرد ربات‌ها</h1>
+            <div class="stats-box">
+                <div class="stat-item">
+                    سلامتی: <span class="health-bar-container"><span id="player-hp" class="health-bar-fill"></span></span>
+                </div>
+                <div class="stat-item">امتیاز: <span id="score-val">0</span></div>
+            </div>
+        </header>
+
+        <div class="controls-layer">
+            <div id="joystick" class="joystick-zone interactive">
+                <div id="joystick-knob" class="joystick-knob"></div>
+            </div>
+            <div class="action-buttons interactive">
+                <button id="btn-jump" class="btn-action">پرش</button>
+                <button id="btn-shoot" class="btn-action">شلیک</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+        <h2>نبرد ربات‌های سه‌بعدی</h2>
+        <p>به میدان نبرد ربات‌ها خوش آمدید! با جوی‌استیک چپ حرکت کنید، با دکمه پرش از موانع بگذرید و با دکمه شلیک ربات‌های دشمن را نابود کنید.</p>
+        <button id="start-btn" class="main-btn">شروع نبرد</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen" class="screen hidden">
+        <h2 style="color: #ff0055; text-shadow: 0 0 20px rgba(255,0,85,0.6);">شکست در نبرد!</h2>
+        <p id="final-score">امتیاز نهایی شما: 0</p>
+        <button id="restart-btn" class="main-btn">تلاش مجدد</button>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer;
+        let player, enemies = [], bullets = [];
+        let score = 0, playerHp = 100;
+        let gameActive = false;
+        let moveVector = new THREE.Vector3(0, 0, 0);
+        let playerVelocityY = 0;
+        let isGrounded = true;
+
+        function init() {
+            const container = document.getElementById('game-container');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x090a16);
+            scene.fog = new THREE.FogExp2(0x090a16, 0.025);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x00f3ff, 0.8);
+            dirLight.position.set(20, 40, 20);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            createEnvironment();
+            createPlayer();
+
+            window.addEventListener('resize', onWindowResize);
+            setupControls();
+            animate();
+        }
+
+        function createEnvironment() {
+            const floorGeo = new THREE.PlaneGeometry(120, 120, 30, 30);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x121428, roughness: 0.8, metalness: 0.2 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            const gridHelper = new THREE.GridHelper(120, 30, 0x00f3ff, 0x1f224f);
+            gridHelper.position.y = 0.01;
+            scene.add(gridHelper);
+
+            const pillarMat = new THREE.MeshStandardMaterial({ color: 0x1f224f, roughness: 0.5, metalness: 0.5 });
+            const neonMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
+
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2;
+                const radius = 35;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+
+                const pillarGeo = new THREE.BoxGeometry(4, 8, 4);
+                const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                pillar.position.set(x, 4, z);
+                pillar.castShadow = true;
+                scene.add(pillar);
+
+                const stripGeo = new THREE.BoxGeometry(4.2, 0.5, 4.2);
+                const strip = new THREE.Mesh(stripGeo, neonMat);
+                strip.position.set(x, 6, z);
+                scene.add(strip);
+            }
+        }
+
+        function createPlayer() {
+            const robotGroup = new THREE.Group();
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0066ff, metalness: 0.7, roughness: 0.3 });
+            const accentMat = new THREE.MeshStandardMaterial({ color: 0x00f3ff, emissive: 0x00f3ff, emissiveIntensity: 0.5 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.9, roughness: 0.1 });
+
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.8), bodyMat);
+            torso.position.y = 1.5;
+            torso.castShadow = true;
+            robotGroup.add(torso);
+
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.7), darkMat);
+            head.position.y = 2.5;
+            robotGroup.add(head);
+
+            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 0.1), accentMat);
+            visor.position.set(0, 2.55, 0.36);
+            robotGroup.add(visor);
+
+            const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.2), darkMat);
+            arm.rotation.z = Math.PI / 2;
+            arm.position.set(0.8, 1.6, 0.4);
+            robotGroup.add(arm);
+
+            const legs = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.8), darkMat);
+            legs.position.y = 0.4;
+            robotGroup.add(legs);
+
+            player = robotGroup;
+            player.position.set(0, 0, 0);
+            scene.add(player);
+        }
+
+        function spawnEnemy() {
+            if (!gameActive) return;
+
+            const enemyGroup = new THREE.Group();
+            const enemyBodyMat = new THREE.MeshStandardMaterial({ color: 0xff0055, metalness: 0.7, roughness: 0.3 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.9 });
+
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.8), enemyBodyMat);
+            torso.position.y = 1.5;
+            enemyGroup.add(torso);
+
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.7), darkMat);
+            head.position.y = 2.5;
+            enemyGroup.add(head);
+
+            const legs = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.8), darkMat);
+            legs.position.y = 0.4;
+            enemyGroup.add(legs);
+
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 35 + Math.random() * 15;
+            enemyGroup.position.set(Math.cos(angle) * dist, 0, Math.sin(angle) * dist);
+            enemyGroup.userData = { hp: 50 };
+
+            scene.add(enemyGroup);
+            enemies.push(enemyGroup);
+        }
+
+        function playerShoot() {
+            if (!gameActive) return;
+
+            const bullet = new THREE.Mesh(
+                new THREE.SphereGeometry(0.2, 8, 8),
+                new THREE.MeshBasicMaterial({ color: 0x00f3ff })
+            );
+            bullet.position.copy(player.position);
+            bullet.position.y += 1.6;
+
+            const dir = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
+            bullet.userData = { velocity: dir.multiplyScalar(0.8), life: 100 };
+
+            scene.add(bullet);
+            bullets.push(bullet);
+        }
+
+        function setupControls() {
+            const joystick = document.getElementById('joystick');
+            const knob = document.getElementById('joystick-knob');
+            let joystickCenter = { x: 0, y: 0 };
+            let touchId = null;
+
+            joystick.addEventListener('touchstart', (e) => {
+                const touch = e.targetTouches[0];
+                touchId = touch.identifier;
+                const rect = joystick.getBoundingClientRect();
+                joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            });
+
+            joystick.addEventListener('touchmove', (e) => {
+                for (let i = 0; i < e.targetTouches.length; i++) {
+                    const touch = e.targetTouches[i];
+                    if (touch.identifier === touchId) {
+                        const dx = touch.clientX - joystickCenter.x;
+                        const dy = touch.clientY - joystickCenter.y;
+                        const dist = Math.min(50, Math.hypot(dx, dy));
+                        const angle = Math.atan2(dy, dx);
+
+                        const knobX = Math.cos(angle) * dist;
+                        const knobY = Math.sin(angle) * dist;
+                        knob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+
+                        moveVector.x = (knobX / 50);
+                        moveVector.z = (knobY / 50);
+                    }
+                }
+            });
+
+            const resetJoystick = () => {
+                touchId = null;
+                knob.style.transform = `translate(0px, 0px)`;
+                moveVector.set(0, 0, 0);
+            };
+
+            joystick.addEventListener('touchend', resetJoystick);
+            joystick.addEventListener('touchcancel', resetJoystick);
+
+            document.getElementById('btn-shoot').addEventListener('click', playerShoot);
+            document.getElementById('btn-jump').addEventListener('click', () => {
+                if (isGrounded && gameActive) {
+                    playerVelocityY = 0.35;
+                    isGrounded = false;
+                }
+            });
+
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', startGame);
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('gameover-screen').classList.add('hidden');
+
+            score = 0;
+            playerHp = 100;
+            updateHPBar();
+            document.getElementById('score-val').innerText = score;
+            player.position.set(0, 0, 0);
+
+            enemies.forEach(e => scene.remove(e));
+            bullets.forEach(b => scene.remove(b));
+            enemies = [];
+            bullets = [];
+
+            for (let i = 0; i < 4; i++) {
+                spawnEnemy();
+            }
+
+            gameActive = true;
+        }
+
+        function updateHPBar() {
+            document.getElementById('player-hp').style.width = Math.max(0, playerHp) + '%';
+            if (playerHp <= 0 && gameActive) {
+                gameOver();
+            }
+        }
+
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('final-score').innerText = `امتیاز نهایی شما: ${score}`;
+            document.getElementById('gameover-screen').classList.remove('hidden');
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameActive) {
+                if (moveVector.lengthSq() > 0) {
+                    const speed = 0.2;
+                    player.position.x += moveVector.x * speed;
+                    player.position.z += moveVector.z * speed;
+                    player.rotation.y = Math.atan2(moveVector.x, moveVector.z);
+
+                    player.position.x = Math.max(-55, Math.min(55, player.position.x));
+                    player.position.z = Math.max(-55, Math.min(55, player.position.z));
+                }
+
+                player.position.y += playerVelocityY;
+                if (!isGrounded) {
+                    playerVelocityY -= 0.02;
+                    if (player.position.y <= 0) {
+                        player.position.y = 0;
+                        playerVelocityY = 0;
+                        isGrounded = true;
+                    }
+                }
+
+                camera.position.x = player.position.x;
+                camera.position.y = player.position.y + 12;
+                camera.position.z = player.position.z + 14;
+                camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    const b = bullets[i];
+                    b.position.add(b.userData.velocity);
+                    b.userData.life--;
+
+                    let hit = false;
+                    for (let j = enemies.length - 1; j >= 0; j--) {
+                        const enemy = enemies[j];
+                        if (b.position.distanceTo(enemy.position) < 1.5) {
+                            enemy.userData.hp -= 25;
+                            hit = true;
+                            if (enemy.userData.hp <= 0) {
+                                scene.remove(enemy);
+                                enemies.splice(j, 1);
+                                score += 10;
+                                document.getElementById('score-val').innerText = score;
+                                spawnEnemy();
+                            }
+                            break;
+                        }
+                    }
+
+                    if (hit || b.userData.life <= 0) {
+                        scene.remove(b);
+                        bullets.splice(i, 1);
+                    }
+                }
+
+                enemies.forEach(enemy => {
+                    enemy.lookAt(player.position.x, player.position.y, player.position.z);
+                    const dir = new THREE.Vector3().subVectors(player.position, enemy.position).normalize();
+                    enemy.position.addScaledVector(dir, 0.06);
+
+                    if (enemy.position.distanceTo(player.position) < 1.8) {
+                        playerHp -= 0.5;
+                        updateHPBar();
+                    }
+                });
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
