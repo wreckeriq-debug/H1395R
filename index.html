@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نبرد ربات‌ها - PeerJS Multiplayer</title>
+    <title>پابجی سه‌بعدی - انسان، حیوان و پارک</title>
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * {
@@ -18,7 +18,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0f1020;
+            background-color: #1a2e1a;
             font-family: 'Vazirmatn', sans-serif;
             color: #ffffff;
         }
@@ -50,36 +50,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 16, 32, 0.75);
+            background: rgba(20, 30, 20, 0.85);
             backdrop-filter: blur(10px);
             padding: 10px 20px;
-            border-radius: 16px;
-            border: 1px solid rgba(0, 243, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 170, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         }
         h1 {
             font-family: 'Lalezar', cursive;
             margin: 0;
-            font-size: 22px;
-            color: #00f3ff;
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            font-size: 20px;
+            color: #ffaa00;
         }
         .stats-box {
             display: flex;
-            gap: 10px;
-            font-size: 13px;
+            gap: 8px;
+            font-size: 12px;
             font-weight: 700;
         }
         .stat-item {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.1);
             padding: 5px 10px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .health-bar-container {
-            width: 100px;
+            width: 80px;
             height: 8px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 4px;
             overflow: hidden;
             display: inline-block;
@@ -88,10 +87,71 @@
         }
         .health-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00f3ff, #00ff66);
+            background: linear-gradient(90deg, #ff0055, #00ff66);
             width: 100%;
             transition: width 0.3s ease;
         }
+        
+        /* Weapon & Outfit Slots */
+        .panel-slots {
+            position: absolute;
+            top: 75px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 20;
+        }
+        .slot-btn {
+            width: 70px;
+            height: 40px;
+            background: rgba(20, 30, 20, 0.85);
+            border: 2px solid rgba(255, 170, 0, 0.4);
+            border-radius: 8px;
+            color: #ffaa00;
+            font-family: 'Lalezar', cursive;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .slot-btn.active {
+            background: rgba(255, 170, 0, 0.3);
+            border-color: #ffaa00;
+        }
+
+        /* Scope Overlay */
+        #scope-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 35%, rgba(0,10,0,0.96) 70%, #000 100%);
+            z-index: 15;
+            pointer-events: none;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .crosshair-sniper {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed rgba(0, 255, 0, 0.7);
+            border-radius: 50%;
+            position: relative;
+        }
+        .crosshair-sniper::before, .crosshair-sniper::after {
+            content: '';
+            position: absolute;
+            background: rgba(0, 255, 0, 0.8);
+        }
+        .crosshair-sniper::before { top: 49%; left: 0; width: 100%; height: 2px; }
+        .crosshair-sniper::after { top: 0; left: 49%; width: 2px; height: 100%; }
+
+        /* Controls */
         .controls-layer {
             display: flex;
             justify-content: space-between;
@@ -100,65 +160,55 @@
             padding-bottom: 20px;
         }
         .joystick-zone {
-            width: 130px;
-            height: 130px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(0, 243, 255, 0.3);
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 170, 0, 0.4);
             border-radius: 50%;
             position: relative;
             touch-action: none;
-            box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.1);
         }
         .joystick-knob {
-            width: 55px;
-            height: 55px;
-            background: linear-gradient(135deg, #00f3ff, #0066ff);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ffaa00, #ff5500);
             border-radius: 50%;
             position: absolute;
-            top: 37.5px;
-            left: 37.5px;
-            box-shadow: 0 4px 15px rgba(0, 243, 255, 0.5);
+            top: 33px;
+            left: 33px;
         }
         .action-buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: flex-end;
         }
         .btn-action {
-            width: 75px;
-            height: 75px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             border: none;
             font-family: 'Lalezar', cursive;
-            font-size: 16px;
+            font-size: 14px;
             color: #fff;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .btn-action:active {
-            transform: scale(0.92);
-        }
-        #btn-shoot {
-            background: linear-gradient(135deg, #ff0055, #ff5500);
-            border: 2px solid rgba(255, 0, 85, 0.5);
-            box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
-        }
-        #btn-jump {
-            background: linear-gradient(135deg, #aa00ff, #00f3ff);
-            border: 2px solid rgba(170, 0, 255, 0.5);
-            box-shadow: 0 0 20px rgba(170, 0, 255, 0.4);
-            margin-bottom: 25px;
-        }
+        .btn-action:active { transform: scale(0.92); }
+        #btn-shoot { background: linear-gradient(135deg, #ff0055, #aa0000); border: 2px solid rgba(255,0,85,0.6); }
+        #btn-scope { background: linear-gradient(135deg, #00aa66, #004422); border: 2px solid rgba(0,255,100,0.6); margin-bottom: 25px; }
+        #btn-camp { background: linear-gradient(135deg, #0088ff, #0033aa); border: 2px solid rgba(0,136,255,0.6); margin-bottom: 50px; width: 60px; height: 60px; font-size: 12px; }
+
+        /* Screens */
         .screen {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at center, #1b1c3a 0%, #090a16 100%);
+            background: radial-gradient(circle at center, #233520 0%, #0a1409 100%);
             z-index: 100;
             display: flex;
             flex-direction: column;
@@ -170,70 +220,55 @@
         .screen h2 {
             font-family: 'Lalezar', cursive;
             font-size: 38px;
-            color: #00f3ff;
+            color: #ffaa00;
             margin: 0 0 10px 0;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+            text-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
         }
         .screen p {
             font-size: 14px;
-            color: #a5b4fc;
+            color: #c2d1b6;
             max-width: 360px;
             margin-bottom: 20px;
             line-height: 1.6;
         }
-        .net-input {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(0,243,255,0.4);
-            padding: 10px 15px;
-            border-radius: 8px;
-            color: #fff;
-            font-family: 'Vazirmatn';
-            font-size: 16px;
-            text-align: center;
-            margin-bottom: 15px;
-            width: 250px;
-            outline: none;
-        }
-        .net-input::placeholder {
-            color: rgba(255,255,255,0.4);
-        }
         .main-btn {
-            background: linear-gradient(135deg, #00f3ff, #0066ff);
-            color: #090a16;
+            background: linear-gradient(135deg, #ffaa00, #ff5500);
+            color: #0a1409;
             border: none;
             padding: 12px 30px;
             font-family: 'Lalezar', cursive;
             font-size: 20px;
             border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
-            margin: 5px;
+            box-shadow: 0 0 25px rgba(255, 170, 0, 0.5);
         }
-        .main-btn:active {
-            transform: scale(0.95);
-        }
-        #net-info {
-            font-size: 13px;
-            color: #00ff66;
-            margin-top: 10px;
-            word-break: break-all;
-        }
-        .hidden {
-            display: none !important;
-        }
+        .main-btn:active { transform: scale(0.95); }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div id="game-container"></div>
 
+    <div id="scope-overlay">
+        <div class="crosshair-sniper"></div>
+    </div>
+
+    <div class="panel-slots interactive">
+        <div id="w-0" class="slot-btn active" onclick="switchWeapon(0)">تک‌تیر 🎯</div>
+        <div id="w-1" class="slot-btn" onclick="switchWeapon(1)">کلاش 🔥</div>
+        <div id="w-2" class="slot-btn" onclick="switchWeapon(2)">آرپی‌جی 🚀</div>
+        <div id="o-0" class="slot-btn" style="background:rgba(0,100,200,0.4);" onclick="changeOutfit(0)">لباس 1 👕</div>
+        <div id="o-1" class="slot-btn" style="background:rgba(200,50,0,0.4);" onclick="changeOutfit(1)">لباس 2 🧥</div>
+    </div>
+
     <div class="ui-layer">
         <header class="interactive">
-            <h1>🤖 نبرد چندنفره ربات‌ها</h1>
+            <h1>🌲 پارک جنگلی پابجی (انسان و حیوان)</h1>
             <div class="stats-box">
-                <div class="stat-item">
-                    سلامتی: <span class="health-bar-container"><span id="player-hp" class="health-bar-fill"></span></span>
-                </div>
+                <div class="stat-item">سلامتی: <span class="health-bar-container"><span id="player-hp" class="health-bar-fill"></span></span></div>
+                <div class="stat-item">اسلحه: <span id="w-name">تک‌تیر (زوم بالا)</span></div>
+                <div class="stat-item">تیر: <span style="color:#00ff66">بی‌نهایت ∞</span></div>
                 <div class="stat-item">امتیاز: <span id="score-val">0</span></div>
             </div>
         </header>
@@ -243,51 +278,50 @@
                 <div id="joystick-knob" class="joystick-knob"></div>
             </div>
             <div class="action-buttons interactive">
-                <button id="btn-jump" class="btn-action">پرش</button>
+                <button id="btn-camp" class="btn-action">خیزش افقی</button>
+                <button id="btn-scope" class="btn-action">دوربین</button>
                 <button id="btn-shoot" class="btn-action">شلیک</button>
             </div>
         </div>
     </div>
 
     <div id="start-screen" class="screen">
-        <h2>نبرد چندنفره ربات‌ها</h2>
-        <p>به صورت تک‌نفره بازی کنید یا با ساخت اتاق یا وارد کردن کد اتاق دوستتان، به صورت آنلاین و هم‌زمان بجنگید!</p>
-        <button id="solo-btn" class="main-btn" style="background: linear-gradient(135deg, #00ff66, #0099ff);">شروع بازی آفلاین</button>
-        <hr style="width: 60%; border-color: rgba(255,255,255,0.1); margin: 15px 0;">
-        <button id="host-btn" class="main-btn">ساخت اتاق آنلاین</button>
-        <div id="net-info"></div>
-        <div style="margin-top: 15px;">
-            <input type="text" id="peer-id-input" class="net-input" placeholder="کد اتاق دوستتان را وارد کنید">
-            <br>
-            <button id="join-btn" class="main-btn" style="background: linear-gradient(135deg, #ff0055, #ff5500);">پیوستن به اتاق</button>
-        </div>
+        <h2>نبرد در پارک جنگلی</h2>
+        <p>محیط شبیه پابجی با درختان پارک، انسان‌های دشمن و حیوانات وحشی! دارای سه اسلحه با تیر بی‌نهایت، قابلیت تغییر لباس انسان و حالت درازکش/خیزش افقی برای کمپ کردن.</p>
+        <button id="start-btn" class="main-btn">ورود به میدان نبرد</button>
     </div>
 
     <div id="gameover-screen" class="screen hidden">
-        <h2 style="color: #ff0055; text-shadow: 0 0 20px rgba(255,0,85,0.6);">شکست در نبرد!</h2>
+        <h2 style="color: #ff0055; text-shadow: 0 0 20px rgba(255,0,85,0.6);">پایان بازی! (Eliminated)</h2>
         <p id="final-score">امتیاز نهایی شما: 0</p>
-        <button id="restart-btn" class="main-btn">بازگشت به منو</button>
+        <button id="restart-btn" class="main-btn">تلاش مجدد</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script>
         let scene, camera, renderer;
-        let player, remotePlayer = null, enemies = [], bullets = [];
+        let player, entities = [], bullets = [];
         let score = 0, playerHp = 100;
         let gameActive = false;
         let moveVector = new THREE.Vector3(0, 0, 0);
-        let playerVelocityY = 0;
-        let isGrounded = true;
+        let isCamping = false;
+        let isScoped = false;
+        
+        let currentWeapon = 0;
+        const weapons = [
+            { name: 'تک‌تیر (زوم بالا)', damage: 100, speed: 1.2, color: 0x00ffcc },
+            { name: 'کلاشینکف', damage: 35, speed: 1.5, color: 0xffaa00 },
+            { name: 'آرپی‌جی', damage: 150, speed: 0.7, color: 0xff0055 }
+        ];
 
-        let peer = null, conn = null, isHost = false;
+        let playerTorsoMat, playerOutfitColors = [0x2244aa, 0xaa2222];
 
         function init() {
             const container = document.getElementById('game-container');
             
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x090a16);
-            scene.fog = new THREE.FogExp2(0x090a16, 0.025);
+            scene.background = new THREE.Color(0x2d4426);
+            scene.fog = new THREE.FogExp2(0x2d4426, 0.015);
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
             
@@ -297,175 +331,169 @@
             renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-            const dirLight = new THREE.DirectionalLight(0x00f3ff, 0.8);
-            dirLight.position.set(20, 40, 20);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const dirLight = new THREE.DirectionalLight(0xffeedd, 0.9);
+            dirLight.position.set(30, 60, 30);
             dirLight.castShadow = true;
             scene.add(dirLight);
 
-            createEnvironment();
-            createPlayer();
+            createParkEnvironment();
+            createHumanPlayer();
 
             window.addEventListener('resize', onWindowResize);
             setupControls();
-            setupNetworking();
             animate();
         }
 
-        function createEnvironment() {
-            const floorGeo = new THREE.PlaneGeometry(120, 120, 30, 30);
-            const floorMat = new THREE.MeshStandardMaterial({ color: 0x121428, roughness: 0.8, metalness: 0.2 });
+        function createParkEnvironment() {
+            // Park Ground
+            const floorGeo = new THREE.PlaneGeometry(160, 160, 40, 40);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x22381b, roughness: 0.9 });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
             floor.receiveShadow = true;
             scene.add(floor);
 
-            const gridHelper = new THREE.GridHelper(120, 30, 0x00f3ff, 0x1f224f);
-            gridHelper.position.y = 0.01;
-            scene.add(gridHelper);
+            // Park Trees (Pines) & Benches
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
+            const leavesMat = new THREE.MeshStandardMaterial({ color: 0x113311 });
+            const benchMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
 
-            const pillarMat = new THREE.MeshStandardMaterial({ color: 0x1f224f, roughness: 0.5, metalness: 0.5 });
-            const neonMat = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
-
-            for (let i = 0; i < 12; i++) {
-                const angle = (i / 12) * Math.PI * 2;
-                const radius = 35;
+            for (let i = 0; i < 25; i++) {
+                const angle = (i / 25) * Math.PI * 2;
+                const radius = 20 + Math.random() * 50;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
 
-                const pillar = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), pillarMat);
-                pillar.position.set(x, 4, z);
-                pillar.castShadow = true;
-                scene.add(pillar);
+                // Tree
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 5), trunkMat);
+                trunk.position.set(x, 2.5, z);
+                trunk.castShadow = true;
+                scene.add(trunk);
 
-                const strip = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.5, 4.2), neonMat);
-                strip.position.set(x, 6, z);
-                scene.add(strip);
+                const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 6, 6), leavesMat);
+                leaves.position.set(x, 6.5, z);
+                leaves.castShadow = true;
+                scene.add(leaves);
+            }
+
+            // Park Benches / Barriers for camping
+            for(let i=0; i<10; i++) {
+                const angle = (i / 10) * Math.PI * 2;
+                const radius = 15 + Math.random() * 30;
+                const bench = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 1.5), benchMat);
+                bench.position.set(Math.cos(angle)*radius, 0.4, Math.sin(angle)*radius);
+                bench.castShadow = true;
+                scene.add(bench);
             }
         }
 
-        function createRobotMesh(colorHex, accentHex) {
+        function createHumanPlayer() {
             const group = new THREE.Group();
-            const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.7, roughness: 0.3 });
-            const accentMat = new THREE.MeshStandardMaterial({ color: accentHex, emissive: accentHex, emissiveIntensity: 0.5 });
-            const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, metalness: 0.9, roughness: 0.1 });
+            playerTorsoMat = new THREE.MeshStandardMaterial({ color: 0x2244aa, roughness: 0.5 });
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+            const pantsMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
 
-            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.8), bodyMat);
-            torso.position.y = 1.5;
+            // Human Body parts
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(1, 1.5, 0.6), playerTorsoMat);
+            torso.position.y = 1.4;
             torso.castShadow = true;
             group.add(torso);
 
-            const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.7), darkMat);
-            head.position.y = 2.5;
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), skinMat);
+            head.position.y = 2.3;
             group.add(head);
 
-            const visor = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.15, 0.1), accentMat);
-            visor.position.set(0, 2.55, 0.36);
-            group.add(visor);
-
-            const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 1.2), darkMat);
-            arm.rotation.z = Math.PI / 2;
-            arm.position.set(0.8, 1.6, 0.4);
-            group.add(arm);
-
-            const legs = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.8), darkMat);
+            const legs = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 0.5), pantsMat);
             legs.position.y = 0.4;
             group.add(legs);
 
-            return group;
-        }
-
-        function createPlayer() {
-            player = createRobotMesh(0x0066ff, 0x00f3ff);
+            player = group;
             player.position.set(0, 0, 0);
             scene.add(player);
         }
 
-        function createRemotePlayer() {
-            if (remotePlayer) scene.remove(remotePlayer);
-            remotePlayer = createRobotMesh(0xff5500, 0xff0055);
-            remotePlayer.position.set(5, 0, 5);
-            scene.add(remotePlayer);
+        function changeOutfit(index) {
+            playerTorsoMat.color.setHex(playerOutfitColors[index]);
+            document.getElementById('o-0').style.borderColor = index === 0 ? '#ffaa00' : 'rgba(255,170,0,0.4)';
+            document.getElementById('o-1').style.borderColor = index === 1 ? '#ffaa00' : 'rgba(255,170,0,0.4)';
         }
 
-        function spawnEnemy() {
+        function spawnEntity(isAnimal = false) {
             if (!gameActive) return;
-            const enemyGroup = createRobotMesh(0xff0055, 0xff0000);
+            const group = new THREE.Group();
+
+            if (isAnimal) {
+                // Wild Animal (Wolf/Dog style)
+                const furMat = new THREE.MeshStandardMaterial({ color: 0x5a4d41, roughness: 0.8 });
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 1.8), furMat);
+                body.position.y = 0.5;
+                group.add(body);
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.6), furMat);
+                head.position.set(0, 0.8, 1);
+                group.add(head);
+                group.userData = { type: 'animal', hp: 40, damage: 0.3, speed: 0.07 };
+            } else {
+                // Human Enemy (PUBG style bot)
+                const enemyMat = new THREE.MeshStandardMaterial({ color: 0xaa3333 });
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+                const torso = new THREE.Mesh(new THREE.BoxGeometry(1, 1.5, 0.6), enemyMat);
+                torso.position.y = 1.4;
+                group.add(torso);
+                const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), skinMat);
+                head.position.y = 2.3;
+                group.add(head);
+                group.userData = { type: 'human', hp: 80, damage: 0.4, speed: 0.05 };
+            }
+
             const angle = Math.random() * Math.PI * 2;
-            const dist = 35 + Math.random() * 15;
-            enemyGroup.position.set(Math.cos(angle) * dist, 0, Math.sin(angle) * dist);
-            enemyGroup.userData = { hp: 50 };
-            scene.add(enemyGroup);
-            enemies.push(enemyGroup);
+            const dist = 30 + Math.random() * 25;
+            group.position.set(Math.cos(angle) * dist, 0, Math.sin(angle) * dist);
+
+            scene.add(group);
+            entities.push(group);
+        }
+
+        function switchWeapon(index) {
+            currentWeapon = index;
+            document.querySelectorAll('.slot-btn').forEach((el, idx) => {
+                if(idx === index) el.classList.add('active');
+                else if(idx < 3) el.classList.remove('active');
+            });
+            document.getElementById('w-name').innerText = weapons[index].name;
+            if(index !== 0 && isScoped) toggleScope();
+        }
+
+        function toggleScope() {
+            if(currentWeapon !== 0) return;
+            isScoped = !isScoped;
+            const overlay = document.getElementById('scope-overlay');
+            if(isScoped) {
+                overlay.style.display = 'flex';
+                camera.fov = 15;
+            } else {
+                overlay.style.display = 'none';
+                camera.fov = 60;
+            }
+            camera.updateProjectionMatrix();
         }
 
         function playerShoot() {
             if (!gameActive) return;
+            const wInfo = weapons[currentWeapon];
+
             const bullet = new THREE.Mesh(
-                new THREE.SphereGeometry(0.2, 8, 8),
-                new THREE.MeshBasicMaterial({ color: 0x00f3ff })
+                new THREE.SphereGeometry(currentWeapon === 2 ? 0.35 : 0.15, 8, 8),
+                new THREE.MeshBasicMaterial({ color: wInfo.color })
             );
             bullet.position.copy(player.position);
-            bullet.position.y += 1.6;
+            bullet.position.y += 1.4;
+
             const dir = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
-            bullet.userData = { velocity: dir.multiplyScalar(0.8), life: 100 };
+            bullet.userData = { velocity: dir.multiplyScalar(wInfo.speed), damage: wInfo.damage, life: 120 };
+
             scene.add(bullet);
             bullets.push(bullet);
-
-            if (conn && conn.open) {
-                conn.send({ type: 'shoot', pos: bullet.position, vel: bullet.userData.velocity });
-            }
-        }
-
-        function setupNetworking() {
-            peer = new Peer();
-            peer.on('open', (id) => {
-                document.getElementById('net-info').innerText = `کد اتاق شما: ${id}`;
-            });
-
-            peer.on('connection', (connection) => {
-                conn = connection;
-                isHost = true;
-                initConnectionEvents();
-                startGame();
-            });
-
-            document.getElementById('host-btn').addEventListener('click', () => {
-                isHost = true;
-                startGame();
-            });
-
-            document.getElementById('join-btn').addEventListener('click', () => {
-                const remoteId = document.getElementById('peer-id-input').value.trim();
-                if (!remoteId) return;
-                conn = peer.connect(remoteId);
-                isHost = false;
-                initConnectionEvents();
-                startGame();
-            });
-        }
-
-        function initConnectionEvents() {
-            conn.on('open', () => {
-                createRemotePlayer();
-            });
-            conn.on('data', (data) => {
-                if (data.type === 'move') {
-                    if (remotePlayer) {
-                        remotePlayer.position.set(data.x, data.y, data.z);
-                        remotePlayer.rotation.y = data.rotY;
-                    }
-                } else if (data.type === 'shoot') {
-                    const b = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.2, 8, 8),
-                        new THREE.MeshBasicMaterial({ color: 0xff5500 })
-                    );
-                    b.position.set(data.pos.x, data.pos.y, data.pos.z);
-                    b.userData = { velocity: new THREE.Vector3(data.vel.x, data.vel.y, data.vel.z), life: 100 };
-                    scene.add(b);
-                    bullets.push(b);
-                }
-            });
         }
 
         function setupControls() {
@@ -487,11 +515,11 @@
                     if (touch.identifier === touchId) {
                         const dx = touch.clientX - joystickCenter.x;
                         const dy = touch.clientY - joystickCenter.y;
-                        const dist = Math.min(50, Math.hypot(dx, dy));
+                        const dist = Math.min(45, Math.hypot(dx, dy));
                         const angle = Math.atan2(dy, dx);
                         knob.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-                        moveVector.x = (Math.cos(angle)*dist / 50);
-                        moveVector.z = (Math.sin(angle)*dist / 50);
+                        moveVector.x = (Math.cos(angle)*dist / 45);
+                        moveVector.z = (Math.sin(angle)*dist / 45);
                     }
                 }
             });
@@ -506,18 +534,25 @@
             joystick.addEventListener('touchcancel', resetJoystick);
 
             document.getElementById('btn-shoot').addEventListener('click', playerShoot);
-            document.getElementById('btn-jump').addEventListener('click', () => {
-                if (isGrounded && gameActive) {
-                    playerVelocityY = 0.35;
-                    isGrounded = false;
+            document.getElementById('btn-scope').addEventListener('click', toggleScope);
+            
+            // Horizontal Prone / Camping feature
+            document.getElementById('btn-camp').addEventListener('click', () => {
+                isCamping = !isCamping;
+                const campBtn = document.getElementById('btn-camp');
+                if(isCamping) {
+                    player.rotation.z = Math.PI / 2; // خوابیدن افقی کامل روی زمین
+                    player.position.y = 0.2;
+                    campBtn.style.background = 'linear-gradient(135deg, #00ff66, #006622)';
+                } else {
+                    player.rotation.z = 0; // بلند شدن
+                    player.position.y = 0;
+                    campBtn.style.background = 'linear-gradient(135deg, #0088ff, #0033aa)';
                 }
             });
 
-            document.getElementById('solo-btn').addEventListener('click', startGame);
-            document.getElementById('restart-btn').addEventListener('click', () => {
-                document.getElementById('gameover-screen').classList.add('hidden');
-                document.getElementById('start-screen').classList.remove('hidden');
-            });
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', startGame);
         }
 
         function startGame() {
@@ -529,15 +564,16 @@
             updateHPBar();
             document.getElementById('score-val').innerText = score;
             player.position.set(0, 0, 0);
+            player.rotation.z = 0;
+            isCamping = false;
 
-            enemies.forEach(e => scene.remove(e));
+            entities.forEach(e => scene.remove(e));
             bullets.forEach(b => scene.remove(b));
-            enemies = [];
+            entities = [];
             bullets = [];
 
-            if (isHost || !conn) {
-                for (let i = 0; i < 4; i++) spawnEnemy();
-            }
+            for (let i = 0; i < 3; i++) spawnEntity(false); // Humans
+            for (let i = 0; i < 2; i++) spawnEntity(true);  // Animals
 
             gameActive = true;
         }
@@ -546,6 +582,7 @@
             document.getElementById('player-hp').style.width = Math.max(0, playerHp) + '%';
             if (playerHp <= 0 && gameActive) {
                 gameActive = false;
+                if(isScoped) toggleScope();
                 document.getElementById('final-score').innerText = `امتیاز نهایی شما: ${score}`;
                 document.getElementById('gameover-screen').classList.remove('hidden');
             }
@@ -561,57 +598,39 @@
             requestAnimationFrame(animate);
 
             if (gameActive) {
-                if (moveVector.lengthSq() > 0) {
-                    const speed = 0.2;
+                if (moveVector.lengthSq() > 0 && !isCamping) {
+                    const speed = 0.16;
                     player.position.x += moveVector.x * speed;
                     player.position.z += moveVector.z * speed;
                     player.rotation.y = Math.atan2(moveVector.x, moveVector.z);
-                    player.position.x = Math.max(-55, Math.min(55, player.position.x));
-                    player.position.z = Math.max(-55, Math.min(55, player.position.z));
-
-                    if (conn && conn.open) {
-                        conn.send({
-                            type: 'move',
-                            x: player.position.x,
-                            y: player.position.y,
-                            z: player.position.z,
-                            rotY: player.rotation.y
-                        });
-                    }
+                    player.position.x = Math.max(-70, Math.min(70, player.position.x));
+                    player.position.z = Math.max(-70, Math.min(70, player.position.z));
                 }
 
-                player.position.y += playerVelocityY;
-                if (!isGrounded) {
-                    playerVelocityY -= 0.02;
-                    if (player.position.y <= 0) {
-                        player.position.y = 0;
-                        playerVelocityY = 0;
-                        isGrounded = true;
-                    }
-                }
-
+                // Camera follow
                 camera.position.x = player.position.x;
-                camera.position.y = player.position.y + 12;
-                camera.position.z = player.position.z + 14;
+                camera.position.y = player.position.y + (isScoped ? 2.5 : (isCamping ? 4 : 9));
+                camera.position.z = player.position.z + (isScoped ? 1.5 : (isCamping ? 6 : 11));
                 camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
 
+                // Bullet update
                 for (let i = bullets.length - 1; i >= 0; i--) {
                     const b = bullets[i];
                     b.position.add(b.userData.velocity);
                     b.userData.life--;
 
                     let hit = false;
-                    for (let j = enemies.length - 1; j >= 0; j--) {
-                        const enemy = enemies[j];
-                        if (b.position.distanceTo(enemy.position) < 1.5) {
-                            enemy.userData.hp -= 25;
+                    for (let j = entities.length - 1; j >= 0; j--) {
+                        const ent = entities[j];
+                        if (b.position.distanceTo(ent.position) < 1.5) {
+                            ent.userData.hp -= b.userData.damage;
                             hit = true;
-                            if (enemy.userData.hp <= 0) {
-                                scene.remove(enemy);
-                                enemies.splice(j, 1);
-                                score += 10;
+                            if (ent.userData.hp <= 0) {
+                                scene.remove(ent);
+                                entities.splice(j, 1);
+                                score += ent.userData.type === 'human' ? 25 : 15;
                                 document.getElementById('score-val').innerText = score;
-                                if (isHost || !conn) spawnEnemy();
+                                spawnEntity(Math.random() > 0.5);
                             }
                             break;
                         }
@@ -623,13 +642,15 @@
                     }
                 }
 
-                enemies.forEach(enemy => {
-                    enemy.lookAt(player.position.x, player.position.y, player.position.z);
-                    const dir = new THREE.Vector3().subVectors(player.position, enemy.position).normalize();
-                    enemy.position.addScaledVector(dir, 0.06);
+                // Entities AI (Humans & Animals attacking player)
+                entities.forEach(ent => {
+                    ent.lookAt(player.position.x, player.position.y, player.position.z);
+                    const dir = new THREE.Vector3().subVectors(player.position, ent.position).normalize();
+                    let moveSpeed = isCamping && ent.userData.type === 'human' ? 0.015 : ent.userData.speed;
+                    ent.position.addScaledVector(dir, moveSpeed);
 
-                    if (enemy.position.distanceTo(player.position) < 1.8) {
-                        playerHp -= 0.5;
+                    if (ent.position.distanceTo(player.position) < 1.8) {
+                        playerHp -= isCamping ? (ent.userData.damage * 0.5) : ent.userData.damage;
                         updateHPBar();
                     }
                 });
