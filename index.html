@@ -536,7 +536,7 @@
 
                     let hit = false;
                     for (let j = enemies.length - 1; j >= 0; j--) {
-                        const enemy = enemies[j];
+                        const enemy = enemies.get ? enemies[j] : enemies[j];
                         if (b.position.distanceTo(enemy.position) < 1.5) {
                             enemy.userData.hp -= 25;
                             hit = true;
