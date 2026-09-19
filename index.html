@@ -2,590 +2,282 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>پابجی سه‌بعدی - انسان، حیوان و پارک</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی پرتال عکس و معماهای بی‌نهایت</title>
+    <!-- بارگذاری فونت وزیرمتن برای زیبایی متن‌ها -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
     <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
-        body, html {
+        body {
             margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
             overflow: hidden;
-            background-color: #1a2e1a;
             font-family: 'Vazirmatn', sans-serif;
-            color: #ffffff;
+            background-color: #0b0b16;
+            user-select: none;
         }
-        #game-container {
-            width: 100%;
-            height: 100%;
+        #ui-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-        .ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            text-align: center;
             pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 15px;
-        }
-        .interactive {
-            pointer-events: auto;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(20, 30, 20, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 10px 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 170, 0, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
         h1 {
-            font-family: 'Lalezar', cursive;
+            margin: 0 0 5px 0;
+            font-size: 22px;
+            color: #00ffcc;
+        }
+        p {
             margin: 0;
-            font-size: 20px;
-            color: #ffaa00;
+            font-size: 14px;
+            color: #ddd;
         }
-        .stats-box {
-            display: flex;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .stat-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 5px 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .health-bar-container {
-            width: 80px;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            overflow: hidden;
-            display: inline-block;
-            vertical-align: middle;
-            margin-right: 5px;
-        }
-        .health-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff0055, #00ff66);
-            width: 100%;
-            transition: width 0.3s ease;
-        }
-        
-        /* Weapon & Outfit Slots */
-        .panel-slots {
+        #crosshair {
             position: absolute;
-            top: 75px;
-            right: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 20;
-        }
-        .slot-btn {
-            width: 70px;
-            height: 40px;
-            background: rgba(20, 30, 20, 0.85);
-            border: 2px solid rgba(255, 170, 0, 0.4);
-            border-radius: 8px;
-            color: #ffaa00;
-            font-family: 'Lalezar', cursive;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .slot-btn.active {
-            background: rgba(255, 170, 0, 0.3);
-            border-color: #ffaa00;
-        }
-
-        /* Scope Overlay */
-        #scope-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0) 35%, rgba(0,10,0,0.96) 70%, #000 100%);
-            z-index: 15;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 1px solid #000;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
             pointer-events: none;
-            display: none;
-            justify-content: center;
-            align-items: center;
         }
-        .crosshair-sniper {
-            width: 100px;
-            height: 100px;
-            border: 2px dashed rgba(0, 255, 0, 0.7);
-            border-radius: 50%;
-            position: relative;
-        }
-        .crosshair-sniper::before, .crosshair-sniper::after {
-            content: '';
+        #controls-hint {
             position: absolute;
-            background: rgba(0, 255, 0, 0.8);
-        }
-        .crosshair-sniper::before { top: 49%; left: 0; width: 100%; height: 2px; }
-        .crosshair-sniper::after { top: 0; left: 49%; width: 2px; height: 100%; }
-
-        /* Controls */
-        .controls-layer {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            width: 100%;
-            padding-bottom: 20px;
-        }
-        .joystick-zone {
-            width: 120px;
-            height: 120px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 170, 0, 0.4);
-            border-radius: 50%;
-            position: relative;
-            touch-action: none;
-        }
-        .joystick-knob {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #ffaa00, #ff5500);
-            border-radius: 50%;
-            position: absolute;
-            top: 33px;
-            left: 33px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        .btn-action {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            border: none;
-            font-family: 'Lalezar', cursive;
-            font-size: 14px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 8px;
             color: #fff;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-action:active { transform: scale(0.92); }
-        #btn-shoot { background: linear-gradient(135deg, #ff0055, #aa0000); border: 2px solid rgba(255,0,85,0.6); }
-        #btn-scope { background: linear-gradient(135deg, #00aa66, #004422); border: 2px solid rgba(0,255,100,0.6); margin-bottom: 25px; }
-        #btn-camp { background: linear-gradient(135deg, #0088ff, #0033aa); border: 2px solid rgba(0,136,255,0.6); margin-bottom: 50px; width: 60px; height: 60px; font-size: 12px; }
-
-        /* Screens */
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, #233520 0%, #0a1409 100%);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            font-size: 13px;
+            border: 1px solid rgba(0, 255, 204, 0.3);
             text-align: center;
-            padding: 20px;
         }
-        .screen h2 {
-            font-family: 'Lalezar', cursive;
-            font-size: 38px;
-            color: #ffaa00;
-            margin: 0 0 10px 0;
-            text-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
-        }
-        .screen p {
-            font-size: 14px;
-            color: #c2d1b6;
-            max-width: 360px;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        .main-btn {
-            background: linear-gradient(135deg, #ffaa00, #ff5500);
-            color: #0a1409;
+        button {
+            background: #00ffcc;
             border: none;
-            padding: 12px 30px;
-            font-family: 'Lalezar', cursive;
-            font-size: 20px;
-            border-radius: 12px;
+            padding: 8px 16px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-weight: bold;
+            border-radius: 5px;
             cursor: pointer;
-            box-shadow: 0 0 25px rgba(255, 170, 0, 0.5);
+            margin-top: 8px;
+            pointer-events: auto;
+            transition: 0.2s;
         }
-        .main-btn:active { transform: scale(0.95); }
-        .hidden { display: none !important; }
+        button:hover {
+            background: #00cca3;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
 
-    <div id="game-container"></div>
-
-    <div id="scope-overlay">
-        <div class="crosshair-sniper"></div>
+    <div id="ui-layer">
+        <h1 id="level-title">معما شماره ۱</h1>
+        <p id="puzzle-desc">عکس پرتال را روی ساختمان بچرخان و فعال کن تا عبور کنی!</p>
+        <button id="action-btn" onclick="activatePortal()">قرار دادن و چرخش عکس (پرتال)</button>
     </div>
 
-    <div class="panel-slots interactive">
-        <div id="w-0" class="slot-btn active" onclick="switchWeapon(0)">تک‌تیر 🎯</div>
-        <div id="w-1" class="slot-btn" onclick="switchWeapon(1)">کلاش 🔥</div>
-        <div id="w-2" class="slot-btn" onclick="switchWeapon(2)">آرپی‌جی 🚀</div>
-        <div id="o-0" class="slot-btn" style="background:rgba(0,100,200,0.4);" onclick="changeOutfit(0)">لباس 1 👕</div>
-        <div id="o-1" class="slot-btn" style="background:rgba(200,50,0,0.4);" onclick="changeOutfit(1)">لباس 2 🧥</div>
+    <div id="crosshair"></div>
+
+    <div id="controls-hint">
+        حرکت با کلیدهای <b>W A S D</b> یا فلش‌ها | چرخش دوربین با ماوس
     </div>
 
-    <div class="ui-layer">
-        <header class="interactive">
-            <h1>🌲 پارک جنگلی پابجی (انسان و حیوان)</h1>
-            <div class="stats-box">
-                <div class="stat-item">سلامتی: <span class="health-bar-container"><span id="player-hp" class="health-bar-fill"></span></span></div>
-                <div class="stat-item">اسلحه: <span id="w-name">تک‌تیر (زوم بالا)</span></div>
-                <div class="stat-item">تیر: <span style="color:#00ff66">بی‌نهایت ∞</span></div>
-                <div class="stat-item">امتیاز: <span id="score-val">0</span></div>
-            </div>
-        </header>
-
-        <div class="controls-layer">
-            <div id="joystick" class="joystick-zone interactive">
-                <div id="joystick-knob" class="joystick-knob"></div>
-            </div>
-            <div class="action-buttons interactive">
-                <button id="btn-camp" class="btn-action">خیزش افقی</button>
-                <button id="btn-scope" class="btn-action">دوربین</button>
-                <button id="btn-shoot" class="btn-action">شلیک</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="start-screen" class="screen">
-        <h2>نبرد در پارک جنگلی</h2>
-        <p>محیط شبیه پابجی با درختان پارک، انسان‌های دشمن و حیوانات وحشی! دارای سه اسلحه با تیر بی‌نهایت، قابلیت تغییر لباس انسان و حالت درازکش/خیزش افقی برای کمپ کردن.</p>
-        <button id="start-btn" class="main-btn">ورود به میدان نبرد</button>
-    </div>
-
-    <div id="gameover-screen" class="screen hidden">
-        <h2 style="color: #ff0055; text-shadow: 0 0 20px rgba(255,0,85,0.6);">پایان بازی! (Eliminated)</h2>
-        <p id="final-score">امتیاز نهایی شما: 0</p>
-        <button id="restart-btn" class="main-btn">تلاش مجدد</button>
-    </div>
-
+    <!-- کتابخانه Three.js برای گرافیک سه‌بعدی -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
         let scene, camera, renderer;
-        let player, entities = [], bullets = [];
-        let score = 0, playerHp = 100;
-        let gameActive = false;
-        let moveVector = new THREE.Vector3(0, 0, 0);
-        let isCamping = false;
-        let isScoped = false;
-        
-        let currentWeapon = 0;
-        const weapons = [
-            { name: 'تک‌تیر (زوم بالا)', damage: 100, speed: 1.2, color: 0x00ffcc },
-            { name: 'کلاشینکف', damage: 35, speed: 1.5, color: 0xffaa00 },
-            { name: 'آرپی‌جی', damage: 150, speed: 0.7, color: 0xff0055 }
-        ];
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let prevTime = performance.now();
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
 
-        let playerTorsoMat, playerOutfitColors = [0x2244aa, 0xaa2222];
+        let currentLevel = 1;
+        let portalActive = false;
+        let wall, portalMesh, littleGirl1, littleGirl2;
+
+        init();
+        animate();
 
         function init() {
-            const container = document.getElementById('game-container');
-            
+            // ۱. صحنه و دوربین
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x2d4426);
-            scene.fog = new THREE.FogExp2(0x2d4426, 0.015);
+            scene.background = new THREE.Color(0x0c0c1c);
+            scene.fog = new THREE.FogExp2(0x0c0c1c, 0.03);
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            
-            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 5);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
+            document.body.appendChild(renderer.domElement);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-            const dirLight = new THREE.DirectionalLight(0xffeedd, 0.9);
-            dirLight.position.set(30, 60, 30);
-            dirLight.castShadow = true;
+            // ۲. نورپردازی
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x00ffcc, 0.8);
+            dirLight.position.set(10, 20, 10);
             scene.add(dirLight);
 
-            createParkEnvironment();
-            createHumanPlayer();
-
-            window.addEventListener('resize', onWindowResize);
-            setupControls();
-            animate();
-        }
-
-        function createParkEnvironment() {
-            // Park Ground
-            const floorGeo = new THREE.PlaneGeometry(160, 160, 40, 40);
-            const floorMat = new THREE.MeshStandardMaterial({ color: 0x22381b, roughness: 0.9 });
+            // ۳. زمین
+            const floorGeo = new THREE.PlaneGeometry(100, 100);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x1b1b2f, roughness: 0.9 });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
             scene.add(floor);
 
-            // Park Trees (Pines) & Benches
-            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5c4033 });
-            const leavesMat = new THREE.MeshStandardMaterial({ color: 0x113311 });
-            const benchMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
+            // ۴. دیوار بلند ساختمان (غیرقابل عبور مستقیم)
+            const wallGeo = new THREE.BoxGeometry(15, 20, 1);
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0x33334d, roughness: 0.4 });
+            wall = new THREE.Mesh(wallGeo, wallMat);
+            wall.position.set(0, 10, -10);
+            scene.add(wall);
 
-            for (let i = 0; i < 25; i++) {
-                const angle = (i / 25) * Math.PI * 2;
-                const radius = 20 + Math.random() * 50;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
+            // ۵. دو دختر خانم هشت‌ساله (کاراکترهای همراه در گوشه محیط)
+            createLittleGirls();
 
-                // Tree
-                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 5), trunkMat);
-                trunk.position.set(x, 2.5, z);
-                trunk.castShadow = true;
-                scene.add(trunk);
+            // ۶. دست‌های بازیکن (اول شخص)
+            createPlayerHands();
 
-                const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 6, 6), leavesMat);
-                leaves.position.set(x, 6.5, z);
-                leaves.castShadow = true;
-                scene.add(leaves);
-            }
+            // ۷. رویدادهای کنترل و کیبورد/ماوس
+            setupControls();
 
-            // Park Benches / Barriers for camping
-            for(let i=0; i<10; i++) {
-                const angle = (i / 10) * Math.PI * 2;
-                const radius = 15 + Math.random() * 30;
-                const bench = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 1.5), benchMat);
-                bench.position.set(Math.cos(angle)*radius, 0.4, Math.sin(angle)*radius);
-                bench.castShadow = true;
-                scene.add(bench);
-            }
+            window.addEventListener('resize', onWindowResize);
         }
 
-        function createHumanPlayer() {
-            const group = new THREE.Group();
-            playerTorsoMat = new THREE.MeshStandardMaterial({ color: 0x2244aa, roughness: 0.5 });
-            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
-            const pantsMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+        function createLittleGirls() {
+            const girlMat1 = new THREE.MeshStandardMaterial({ color: 0xff6b81 });
+            const girlMat2 = new THREE.MeshStandardMaterial({ color: 0xff4757 });
+            
+            // دختر اول
+            const head1 = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), girlMat1);
+            head1.position.set(-4, 0.8, -5);
+            scene.add(head1);
+            const body1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1, 16), girlMat1);
+            body1.position.set(-4, 0, -5);
+            scene.add(body1);
 
-            // Human Body parts
-            const torso = new THREE.Mesh(new THREE.BoxGeometry(1, 1.5, 0.6), playerTorsoMat);
-            torso.position.y = 1.4;
-            torso.castShadow = true;
-            group.add(torso);
-
-            const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), skinMat);
-            head.position.y = 2.3;
-            group.add(head);
-
-            const legs = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.8, 0.5), pantsMat);
-            legs.position.y = 0.4;
-            group.add(legs);
-
-            player = group;
-            player.position.set(0, 0, 0);
-            scene.add(player);
+            // دختر دوم
+            const head2 = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), girlMat2);
+            head2.position.set(4, 0.8, -5);
+            scene.add(head2);
+            const body2 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1, 16), girlMat2);
+            body2.position.set(4, 0, -5);
+            scene.add(body2);
         }
 
-        function changeOutfit(index) {
-            playerTorsoMat.color.setHex(playerOutfitColors[index]);
-            document.getElementById('o-0').style.borderColor = index === 0 ? '#ffaa00' : 'rgba(255,170,0,0.4)';
-            document.getElementById('o-1').style.borderColor = index === 1 ? '#ffaa00' : 'rgba(255,170,0,0.4)';
+        function createPlayerHands() {
+            // شبیه‌سازی دست راست در دید اول شخص
+            const handGeo = new THREE.BoxGeometry(0.25, 0.25, 0.8);
+            const handMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+            const rightHand = new THREE.Mesh(handGeo, handMat);
+            rightHand.position.set(0.4, -0.4, -0.6);
+            camera.add(rightHand);
+            scene.add(camera);
         }
 
-        function spawnEntity(isAnimal = false) {
-            if (!gameActive) return;
-            const group = new THREE.Group();
+        function activatePortal() {
+            if (!portalActive) {
+                // ساخت عکس تبدیل شده به پرتال روی دیوار
+                const portalGeo = new THREE.PlaneGeometry(3, 5);
+                const portalMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, side: THREE.DoubleSide, wireframe: true });
+                portalMesh = new THREE.Mesh(portalGeo, portalMat);
+                portalMesh.position.set(0, 5 + (currentLevel * 0.5), -9.4);
+                scene.add(portalMesh);
 
-            if (isAnimal) {
-                // Wild Animal (Wolf/Dog style)
-                const furMat = new THREE.MeshStandardMaterial({ color: 0x5a4d41, roughness: 0.8 });
-                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 1.8), furMat);
-                body.position.y = 0.5;
-                group.add(body);
-                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.6), furMat);
-                head.position.set(0, 0.8, 1);
-                group.add(head);
-                group.userData = { type: 'animal', hp: 40, damage: 0.3, speed: 0.07 };
+                portalActive = true;
+                document.getElementById('puzzle-desc').innerText = "پرتال فعال شد! از آن رد شو تا وارد معما و طبقه بعدی شوی.";
+                document.getElementById('action-btn').innerText = "رفتن به مرحله بعد";
             } else {
-                // Human Enemy (PUBG style bot)
-                const enemyMat = new THREE.MeshStandardMaterial({ color: 0xaa3333 });
-                const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
-                const torso = new THREE.Mesh(new THREE.BoxGeometry(1, 1.5, 0.6), enemyMat);
-                torso.position.y = 1.4;
-                group.add(torso);
-                const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 8), skinMat);
-                head.position.y = 2.3;
-                group.add(head);
-                group.userData = { type: 'human', hp: 80, damage: 0.4, speed: 0.05 };
+                // رفتن به معما و سطح بعدی (سخت‌تر شدن بی‌نهایت)
+                currentLevel++;
+                portalActive = false;
+                scene.remove(portalMesh);
+                
+                document.getElementById('level-title').innerText = `معما شماره ${currentLevel}`;
+                document.getElementById('puzzle-desc').innerText = `محیط پیچیده‌تر شد! عکس پرتال را با دقت بچرخان و روی ساختمان قرار ده.`;
+                document.getElementById('action-btn').innerText = "قرار دادن و چرخش عکس (پرتال)";
+                
+                // جابجایی تصادفی‌تر دیوار یا تغییر رنگ برای چالش جدید
+                wall.scale.y += 0.1;
+                camera.position.set(0, 1.6, 5);
             }
-
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 30 + Math.random() * 25;
-            group.position.set(Math.cos(angle) * dist, 0, Math.sin(angle) * dist);
-
-            scene.add(group);
-            entities.push(group);
-        }
-
-        function switchWeapon(index) {
-            currentWeapon = index;
-            document.querySelectorAll('.slot-btn').forEach((el, idx) => {
-                if(idx === index) el.classList.add('active');
-                else if(idx < 3) el.classList.remove('active');
-            });
-            document.getElementById('w-name').innerText = weapons[index].name;
-            if(index !== 0 && isScoped) toggleScope();
-        }
-
-        function toggleScope() {
-            if(currentWeapon !== 0) return;
-            isScoped = !isScoped;
-            const overlay = document.getElementById('scope-overlay');
-            if(isScoped) {
-                overlay.style.display = 'flex';
-                camera.fov = 15;
-            } else {
-                overlay.style.display = 'none';
-                camera.fov = 60;
-            }
-            camera.updateProjectionMatrix();
-        }
-
-        function playerShoot() {
-            if (!gameActive) return;
-            const wInfo = weapons[currentWeapon];
-
-            const bullet = new THREE.Mesh(
-                new THREE.SphereGeometry(currentWeapon === 2 ? 0.35 : 0.15, 8, 8),
-                new THREE.MeshBasicMaterial({ color: wInfo.color })
-            );
-            bullet.position.copy(player.position);
-            bullet.position.y += 1.4;
-
-            const dir = new THREE.Vector3(0, 0, -1).applyAxisAngle(new THREE.Vector3(0, 1, 0), player.rotation.y);
-            bullet.userData = { velocity: dir.multiplyScalar(wInfo.speed), damage: wInfo.damage, life: 120 };
-
-            scene.add(bullet);
-            bullets.push(bullet);
         }
 
         function setupControls() {
-            const joystick = document.getElementById('joystick');
-            const knob = document.getElementById('joystick-knob');
-            let joystickCenter = { x: 0, y: 0 };
-            let touchId = null;
-
-            joystick.addEventListener('touchstart', (e) => {
-                const touch = e.targetTouches[0];
-                touchId = touch.identifier;
-                const rect = joystick.getBoundingClientRect();
-                joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-            });
-
-            joystick.addEventListener('touchmove', (e) => {
-                for (let i = 0; i < e.targetTouches.length; i++) {
-                    const touch = e.targetTouches[i];
-                    if (touch.identifier === touchId) {
-                        const dx = touch.clientX - joystickCenter.x;
-                        const dy = touch.clientY - joystickCenter.y;
-                        const dist = Math.min(45, Math.hypot(dx, dy));
-                        const angle = Math.atan2(dy, dx);
-                        knob.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-                        moveVector.x = (Math.cos(angle)*dist / 45);
-                        moveVector.z = (Math.sin(angle)*dist / 45);
-                    }
+            document.addEventListener('keydown', (e) => {
+                switch (e.code) {
+                    case 'KeyW': case 'ArrowUp': moveForward = true; break;
+                    case 'KeyS': case 'ArrowDown': moveBackward = true; break;
+                    case 'KeyA': case 'ArrowLeft': moveLeft = true; break;
+                    case 'KeyD': case 'ArrowRight': moveRight = true; break;
                 }
             });
 
-            const resetJoystick = () => {
-                touchId = null;
-                knob.style.transform = `translate(0px, 0px)`;
-                moveVector.set(0, 0, 0);
-            };
-
-            joystick.addEventListener('touchend', resetJoystick);
-            joystick.addEventListener('touchcancel', resetJoystick);
-
-            document.getElementById('btn-shoot').addEventListener('click', playerShoot);
-            document.getElementById('btn-scope').addEventListener('click', toggleScope);
-            
-            // Horizontal Prone / Camping feature
-            document.getElementById('btn-camp').addEventListener('click', () => {
-                isCamping = !isCamping;
-                const campBtn = document.getElementById('btn-camp');
-                if(isCamping) {
-                    player.rotation.z = Math.PI / 2; // خوابیدن افقی کامل روی زمین
-                    player.position.y = 0.2;
-                    campBtn.style.background = 'linear-gradient(135deg, #00ff66, #006622)';
-                } else {
-                    player.rotation.z = 0; // بلند شدن
-                    player.position.y = 0;
-                    campBtn.style.background = 'linear-gradient(135deg, #0088ff, #0033aa)';
+            document.addEventListener('keyup', (e) => {
+                switch (e.code) {
+                    case 'KeyW': case 'ArrowUp': moveForward = false; break;
+                    case 'KeyS': case 'ArrowDown': moveBackward = false; break;
+                    case 'KeyA': case 'ArrowLeft': moveLeft = false; break;
+                    case 'KeyD': case 'ArrowRight': moveRight = false; break;
                 }
             });
 
-            document.getElementById('start-btn').addEventListener('click', startGame);
-            document.getElementById('restart-btn').addEventListener('click', startGame);
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            document.addEventListener('mousedown', () => isDragging = true);
+            document.addEventListener('mouseup', () => isDragging = false);
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+
+                camera.rotation.y -= deltaX * 0.003;
+                // محدود کردن زاویه نگاه عمودی
+                camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x - deltaY * 0.003));
+
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
         }
 
-        function startGame() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('gameover-screen').classList.add('hidden');
+        function animate() {
+            requestAnimationFrame(animate);
 
-            score = 0;
-            playerHp = 100;
-            updateHPBar();
-            document.getElementById('score-val').innerText = score;
-            player.position.set(0, 0, 0);
-            player.rotation.z = 0;
-            isCamping = false;
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
 
-            entities.forEach(e => scene.remove(e));
-            bullets.forEach(b => scene.remove(b));
-            entities = [];
-            bullets = [];
+            velocity.x -= velocity.x * 10.0 * delta;
+            velocity.z -= velocity.z * 10.0 * delta;
 
-            for (let i = 0; i < 3; i++) spawnEntity(false); // Humans
-            for (let i = 0; i < 2; i++) spawnEntity(true);  // Animals
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize();
 
-            gameActive = true;
-        }
+            if (moveForward || moveBackward) velocity.z -= direction.z * 40.0 * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * 40.0 * delta;
 
-        function updateHPBar() {
-            document.getElementById('player-hp').style.width = Math.max(0, playerHp) + '%';
-            if (playerHp <= 0 && gameActive) {
-                gameActive = false;
-                if(isScoped) toggleScope();
-                document.getElementById('final-score').innerText = `امتیاز نهایی شما: ${score}`;
-                document.getElementById('gameover-screen').classList.remove('hidden');
-            }
+            camera.translateX(velocity.x * delta);
+            camera.translateZ(velocity.z * delta);
+
+            prevTime = time;
+            renderer.render(scene, camera);
         }
 
         function onWindowResize() {
@@ -593,73 +285,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (gameActive) {
-                if (moveVector.lengthSq() > 0 && !isCamping) {
-                    const speed = 0.16;
-                    player.position.x += moveVector.x * speed;
-                    player.position.z += moveVector.z * speed;
-                    player.rotation.y = Math.atan2(moveVector.x, moveVector.z);
-                    player.position.x = Math.max(-70, Math.min(70, player.position.x));
-                    player.position.z = Math.max(-70, Math.min(70, player.position.z));
-                }
-
-                // Camera follow
-                camera.position.x = player.position.x;
-                camera.position.y = player.position.y + (isScoped ? 2.5 : (isCamping ? 4 : 9));
-                camera.position.z = player.position.z + (isScoped ? 1.5 : (isCamping ? 6 : 11));
-                camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
-
-                // Bullet update
-                for (let i = bullets.length - 1; i >= 0; i--) {
-                    const b = bullets[i];
-                    b.position.add(b.userData.velocity);
-                    b.userData.life--;
-
-                    let hit = false;
-                    for (let j = entities.length - 1; j >= 0; j--) {
-                        const ent = entities[j];
-                        if (b.position.distanceTo(ent.position) < 1.5) {
-                            ent.userData.hp -= b.userData.damage;
-                            hit = true;
-                            if (ent.userData.hp <= 0) {
-                                scene.remove(ent);
-                                entities.splice(j, 1);
-                                score += ent.userData.type === 'human' ? 25 : 15;
-                                document.getElementById('score-val').innerText = score;
-                                spawnEntity(Math.random() > 0.5);
-                            }
-                            break;
-                        }
-                    }
-
-                    if (hit || b.userData.life <= 0) {
-                        scene.remove(b);
-                        bullets.splice(i, 1);
-                    }
-                }
-
-                // Entities AI (Humans & Animals attacking player)
-                entities.forEach(ent => {
-                    ent.lookAt(player.position.x, player.position.y, player.position.z);
-                    const dir = new THREE.Vector3().subVectors(player.position, ent.position).normalize();
-                    let moveSpeed = isCamping && ent.userData.type === 'human' ? 0.015 : ent.userData.speed;
-                    ent.position.addScaledVector(dir, moveSpeed);
-
-                    if (ent.position.distanceTo(player.position) < 1.8) {
-                        playerHp -= isCamping ? (ent.userData.damage * 0.5) : ent.userData.damage;
-                        updateHPBar();
-                    }
-                });
-            }
-
-            renderer.render(scene, camera);
-        }
-
-        init();
     </script>
 </body>
 </html>
